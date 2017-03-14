@@ -19,12 +19,13 @@ const defaultShutdownGraceTime = 3
 var flagPort int
 var flagConcurrency string
 var flagRestart bool
+var flagNoColor bool
 var flagShutdownGraceTime int
 var envs envFiles
 
 var cmdStart = &Command{
 	Run:   runStart,
-	Usage: "start [process name] [-f procfile] [-e env] [-c concurrency] [-p port] [-t timeout] [-r]",
+	Usage: "start [process name] [-f procfile] [-e env] [-c concurrency] [-p port] [-t timeout] [-r] [--nocolor]",
 	Short: "Start the application",
 	Long: `
 Start the application specified by a Procfile (defaults to ./Procfile)
@@ -44,6 +45,7 @@ func init() {
 	cmdStart.Flag.IntVar(&flagPort, "p", defaultPort, "port")
 	cmdStart.Flag.StringVar(&flagConcurrency, "c", "", "concurrency")
 	cmdStart.Flag.BoolVar(&flagRestart, "r", false, "restart")
+	cmdStart.Flag.BoolVar(&flagNoColor, "nocolor", false, "strip color from output")
 	cmdStart.Flag.IntVar(&flagShutdownGraceTime, "t", defaultShutdownGraceTime, "shutdown grace time")
 	err := readConfigFile(".forego", &flagProcfile, &flagPort, &flagConcurrency, &flagShutdownGraceTime)
 	handleError(err)
@@ -235,7 +237,7 @@ func runStart(cmd *Command, args []string) {
 
 	of := NewOutletFactory()
 	of.Padding = pf.LongestProcessName(concurrency)
-
+	of.Color = !flagNoColor
 	f := &Forego{
 		outletFactory: of,
 	}

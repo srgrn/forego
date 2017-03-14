@@ -13,7 +13,7 @@ import (
 
 type OutletFactory struct {
 	Padding int
-
+	Color   bool
 	sync.Mutex
 }
 
@@ -76,18 +76,21 @@ func (of *OutletFactory) ErrorOutput(str string) {
 func (of *OutletFactory) WriteLine(left, right string, leftC, rightC ct.Color, isError bool) {
 	of.Lock()
 	defer of.Unlock()
+	if of.Color {
+		ct.ChangeColor(leftC, true, ct.None, false)
+	}
 
-	ct.ChangeColor(leftC, true, ct.None, false)
 	formatter := fmt.Sprintf("%%-%ds | ", of.Padding)
 	fmt.Printf(formatter, left)
-
-	if isError {
-		ct.ChangeColor(ct.Red, true, ct.None, true)
-	} else {
-		ct.ResetColor()
+	if of.Color {
+		if isError {
+			ct.ChangeColor(ct.Red, true, ct.None, true)
+		} else {
+			ct.ResetColor()
+		}
 	}
 	fmt.Println(right)
-	if isError {
+	if isError && of.Color {
 		ct.ResetColor()
 	}
 }
